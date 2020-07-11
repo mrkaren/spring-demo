@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+
+<h3>Editd Book:</h3>
+<form action="/saveBook" method="post">
+  <input type="hidden" name="id" th:value="${book.id}">
+  <input type="text" name="title" th:value="${book.title}"/><br>
+  <textarea  name="description" th:text="${book.description}"></textarea>
+  <select name="user.id">
+    <option th:each="user: ${users}" th:value="${user.id}" th:text="${user.name}"
+            th:selected="${book.user.id == user.id}"></option>
+  </select><br>
+  <input type="submit" value="Update">
+</form>
+
+<a href="/">Back</a>
+</body>
+</html>
