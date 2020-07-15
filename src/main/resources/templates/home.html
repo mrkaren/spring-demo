@@ -7,6 +7,9 @@
 </head>
 <body>
 Welcome Spring!!!<br>
+<a href="/logout" th:if="${username != null}"> Logout </a>
+<a href="/login" th:if="${username == null}"> Login </a>
+<h3 th:text="Welcome +' ' + ${username}" th:if="${username != null}"></h3>
 <h3 th:text="${msg}" th:if="${msg != null}"></h3>
 <h3>Add User:</h3>
 <form action="/addUser" method="post" enctype="multipart/form-data">
