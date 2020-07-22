@@ -1,14 +1,17 @@
 package am.itspace.springdemo.controller;
 
 import am.itspace.springdemo.model.Book;
+import am.itspace.springdemo.model.Role;
 import am.itspace.springdemo.model.User;
 import am.itspace.springdemo.repository.BookRepository;
 import am.itspace.springdemo.repository.UserRepository;
+import am.itspace.springdemo.security.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
@@ -30,6 +34,7 @@ public class MainController {
 
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/")
     public String homePage(@AuthenticationPrincipal Principal principal, Model modelMap, @RequestParam(name = "msg", required = false) String msg) {
@@ -48,10 +53,15 @@ public class MainController {
 
     @PostMapping("/addUser")
     public String addUser(@ModelAttribute User user, @RequestParam("image") MultipartFile file) throws IOException {
+        Optional<User> byUsername = userRepository.findByUsername(user.getUsername());
+        if (byUsername.isPresent()) {
+            return "redirect:/?msg=User already exists";
+        }
         String name = System.currentTimeMillis() + "_" + file.getOriginalFilename();
         File image = new File(uploadDir, name);
         file.transferTo(image);
         user.setProfilePic(name);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
         return "redirect:/?msg=User was added";
     }
@@ -66,6 +76,24 @@ public class MainController {
     @GetMapping("/about")
     public String aboutUsPage() {
         return "about";
+    }
+
+    @GetMapping("/loginPage")
+    public String loginPage() {
+        return "loginPage";
+    }
+
+    @GetMapping("/successLogin")
+    public String successLogin(@AuthenticationPrincipal CurrentUser currentUser) {
+        if (currentUser == null) {
+            return "redirect:/";
+        }
+        User user = currentUser.getUser();
+        if (user.getRole() == Role.ADMIN) {
+            return "redirect:/admin";
+        } else {
+            return "redirect:/user";
+        }
     }
 
 

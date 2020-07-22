@@ -5,11 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
+import javax.persistence.*;
 
 @Data
 @AllArgsConstructor
@@ -24,6 +20,10 @@ public class User {
     private int id;
     private String name;
     private String surname;
+    private String username;
+    private String password;
+    @Enumerated(value = EnumType.STRING)
+    private Role role;
     private String profilePic;
 
 }

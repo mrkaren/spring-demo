@@ -1,5 +1,6 @@
 package am.itspace.springdemo.config;
 
+import am.itspace.springdemo.security.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,31 +15,32 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .formLogin()
+                .loginPage("/loginPage")
+                .loginProcessingUrl("/perform_login")
+                .defaultSuccessUrl("/successLogin")
                 .and()
                 .logout()
                 .logoutSuccessUrl("/")
                 .and()
                 .authorizeRequests()
                 .antMatchers("/").permitAll()
-                .antMatchers(HttpMethod.GET, "/editBook").hasAnyRole("USER", "ADMIN")
-                .antMatchers("/deleteBook").hasAnyRole("ADMIN");
+                .antMatchers(HttpMethod.GET, "/editBook").hasAnyAuthority("USER", "ADMIN")
+                .antMatchers("/deleteBook").hasAnyAuthority("ADMIN");
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("admin@mail.com")
-                .password(passwordEncoder.encode("asdf#Wr5frh3t"))
-                .roles("USER").and()
-                .withUser("petros")
-                .password(passwordEncoder.encode("petros"))
-                .roles("ADMIN");
+        auth.userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder);
     }
 
     @Bean
