@@ -10,13 +10,14 @@ Welcome Spring!!!<br>
 <a href="/logout" th:if="${username != null}"> Logout </a>
 <a href="/loginPage" th:if="${username == null}"> Login </a>
 <h3 th:text="Welcome +' ' + ${username}" th:if="${username != null}"></h3>
-<h3 th:text="${msg}" th:if="${msg != null}"></h3>
+<h3 style="color: green" th:text="${msg}" th:if="${msg != null}"></h3>
 <h3>Add User:</h3>
 <form action="/addUser" method="post" enctype="multipart/form-data">
     <input type="text" name="name" placeholder="Please input name"/><br>
     <input type="text" name="surname" placeholder="Please input surneme"/><br>
     <input type="text" name="username" placeholder="Please input username"/><br>
     <input type="password" name="password" placeholder="Please input password"/><br>
+    <input type="password" name="confirmPassword" placeholder="Please input password once again"/><br>
     <select name="role">
         <option value="USER">user</option>
         <option value="ADMIN">admin</option>
@@ -52,7 +53,6 @@ Books:
     </div>
 
 </ul>
-<h1>utyu</h1>
 <a href="/about">About Us</a>
 </body>
 </html>

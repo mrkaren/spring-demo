@@ -6,6 +6,7 @@ import am.itspace.springdemo.model.User;
 import am.itspace.springdemo.repository.BookRepository;
 import am.itspace.springdemo.repository.UserRepository;
 import am.itspace.springdemo.security.CurrentUser;
+import am.itspace.springdemo.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import java.io.InputStream;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class MainController {
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @GetMapping("/")
     public String homePage(@AuthenticationPrincipal Principal principal, Model modelMap, @RequestParam(name = "msg", required = false) String msg) {
@@ -53,6 +56,10 @@ public class MainController {
 
     @PostMapping("/addUser")
     public String addUser(@ModelAttribute User user, @RequestParam("image") MultipartFile file) throws IOException {
+        if (!user.getPassword().equals(user.getConfirmPassword())) {
+            return "redirect:/?msg=Password and Confirm Password does not match!";
+        }
+
         Optional<User> byUsername = userRepository.findByUsername(user.getUsername());
         if (byUsername.isPresent()) {
             return "redirect:/?msg=User already exists";
@@ -62,8 +69,28 @@ public class MainController {
         file.transferTo(image);
         user.setProfilePic(name);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setActive(false);
+        user.setToken(UUID.randomUUID().toString());
         userRepository.save(user);
+        String link = "http://localhost:8081/activate?email=" + user.getUsername() + "&token=" + user.getToken();
+        emailService.send(user.getUsername(),
+                "Welcome", "Dear " + user.getName() + " You have successfully registered. Please activate your account by clicking on: " + link);
         return "redirect:/?msg=User was added";
+    }
+
+    @GetMapping("/activate")
+    public String activate(@RequestParam("email") String email, @RequestParam("token") String token) {
+        Optional<User> byUsername = userRepository.findByUsername(email);
+        if (byUsername.isPresent()) {
+            User user = byUsername.get();
+            if (user.getToken().equals(token)) {
+                user.setActive(true);
+                user.setToken("");
+                userRepository.save(user);
+                return "redirect:/?msg=User was activate, please login";
+            }
+        }
+        return "redirect:/?msg=Something went wrong. Please try again";
     }
 
     @GetMapping("/deleteUser")
