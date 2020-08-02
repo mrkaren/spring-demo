@@ -6,6 +6,10 @@
 </head>
 <body>
 <div th:fragment="header">
+    <a href="?lang=hy">Hy</a>
+    <a href="?lang=en">ENG</a>
+    <a href="?lang=ru">RU</a>
+    <br>
     <a href="/logout" th:if="${username != null}"> Logout </a>
     <a href="/loginPage" th:if="${username == null}"> Login </a>
     <h3 th:text="Welcome +' ' + ${username}" th:if="${username != null}"></h3>
