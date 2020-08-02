@@ -10,6 +10,8 @@ import am.itspace.springdemo.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +28,8 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Controller
 @RequiredArgsConstructor
@@ -40,17 +44,25 @@ public class MainController {
     private final EmailService emailService;
 
     @GetMapping("/")
-    public String homePage(@AuthenticationPrincipal Principal principal, Model modelMap, @RequestParam(name = "msg", required = false) String msg) {
-        String username = null;
-        if (principal != null) {
-            username = principal.getName();
-        }
+    public String homePage(Model modelMap,
+                           @RequestParam(name = "msg", required = false) String msg,
+                           @RequestParam(value = "page", defaultValue = "1") int page,
+                           @RequestParam(value = "size", defaultValue = "20") int size
+    ) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
         List<User> users = userRepository.findAll();
-        List<Book> books = bookRepository.findAll();
+        Page<Book> books = bookRepository.findAll(pageRequest);
+        int totalPages = books.getTotalPages();
+        if (totalPages > 0) {
+            List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPages)
+                    .boxed()
+                    .collect(Collectors.toList());
+            modelMap.addAttribute("pageNumbers", pageNumbers);
+        }
+
         modelMap.addAttribute("users", users);
         modelMap.addAttribute("books", books);
         modelMap.addAttribute("msg", msg);
-        modelMap.addAttribute("username", username);
         return "home";
     }
 

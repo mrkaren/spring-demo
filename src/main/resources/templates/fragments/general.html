@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div th:fragment="header">
+    <a href="/logout" th:if="${username != null}"> Logout </a>
+    <a href="/loginPage" th:if="${username == null}"> Login </a>
+    <h3 th:text="Welcome +' ' + ${username}" th:if="${username != null}"></h3>
+</div>
+
+
+</body>
+</html>
