@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div style="background-color:black; color: azure">
+<span th:text="#{email.text.dear}"></span> <span th:text="${user.name}"></span> <br>
+
+You have successfully registered. Please activate your account by clicking on:
+<a th:href="${url}">Activate</a>
+</div>
+</body>
+</html>

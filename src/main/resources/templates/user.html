@@ -12,8 +12,10 @@
 <h3>Add User:</h3>
 <form action="/user/add" method="post" enctype="multipart/form-data">
     <input type="text" name="name" placeholder="Please input name"/><br>
+<!--    <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name-->
+<!--        Error</span>-->
     <input type="text" name="surname" placeholder="Please input surname"/><br>
-    <input type="text" name="username" placeholder="Please input username"/><br>
+    <input type="text" name="username" placeholder="Please input email"/><br>
     <input type="password" name="password" placeholder="Please input password"/><br>
     <input type="password" name="confirmPassword" placeholder="Please input password once again"/><br>
     <select name="role">

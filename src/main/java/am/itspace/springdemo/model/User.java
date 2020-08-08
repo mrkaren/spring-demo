@@ -23,8 +23,6 @@ public class User {
     private String username;
     private String password;
     private boolean active;
-    @Transient
-    private String confirmPassword;
     @Enumerated(value = EnumType.STRING)
     private Role role;
     private String profilePic;
