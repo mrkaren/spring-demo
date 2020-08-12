@@ -4,14 +4,12 @@ import am.itspace.springdemo.dto.UserRequestDto;
 import am.itspace.springdemo.model.User;
 import am.itspace.springdemo.repository.UserRepository;
 import am.itspace.springdemo.service.EmailService;
-import am.itspace.springdemo.util.TextUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -79,7 +77,7 @@ public class UserController {
         userRepository.save(user);
         String link = "http://localhost:8081/user/activate?email=" + userRequest.getUsername() + "&token=" + user.getToken();
         emailService.sendHtmlEmail(userRequest.getUsername(),
-                "Welcome", user, link,"email/UserWelcomeMail.html", locale);
+                "Welcome", user, link, "email/UserWelcomeMail.html", locale);
         return "redirect:/?msg=User was added";
     }
 
@@ -103,5 +101,47 @@ public class UserController {
             }
         }
         return "redirect:/?msg=Something went wrong. Please try again";
+    }
+
+    @GetMapping("/user/forgotPassword")
+    public String forgotPass(@RequestParam("email") String email) {
+        Optional<User> byUsername = userRepository.findByUsername(email);
+        if (byUsername.isPresent() && byUsername.get().isActive()) {
+            User user = byUsername.get();
+            String token = UUID.randomUUID().toString();
+            user.setToken(token);
+            userRepository.save(user);
+            String link = "http://localhost:8081/user/forgotPassword/reset?email=" + user.getUsername() + "&token=" + token;
+            emailService.send(user.getUsername(), "RESET password", "Dear user, please open this link in order to reset your password: " + link);
+        }
+        return "redirect:/";
+    }
+
+    @GetMapping("/user/forgotPassword/reset")
+    public String forgotPassReset(ModelMap modelMap, @RequestParam("email") String email, @RequestParam("token") String token) {
+        Optional<User> byUsername = userRepository.findByUsername(email);
+        if (byUsername.isPresent() && byUsername.get().getToken().equals(token)) {
+            modelMap.addAttribute("email", byUsername.get().getUsername());
+            modelMap.addAttribute("token", byUsername.get().getToken());
+            return "changePassword";
+        }
+        return "redirect:/";
+    }
+
+    @PostMapping("/user/forgotPassword/change")
+    public String changePassword(@RequestParam("email") String email, @RequestParam("token") String token,
+                                 @RequestParam("password") String password,
+                                 @RequestParam("repeatPassword") String repeatPassword) {
+        Optional<User> byUsername = userRepository.findByUsername(email);
+        if (byUsername.isPresent()) {
+            User user = byUsername.get();
+            if (user.getToken().equals(token) && password.equals(repeatPassword)) {
+                user.setToken("");
+                user.setPassword(passwordEncoder.encode(password));
+                userRepository.save(user);
+                return "redirect:/?msg=Your password changed!";
+            }
+        }
+        return "redirect:/";
     }
 }
