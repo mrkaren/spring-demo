@@ -7,6 +7,9 @@ import am.itspace.springdemo.repository.UserRepository;
 import am.itspace.springdemo.service.BookService;
 import am.itspace.springdemo.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -25,6 +28,7 @@ import java.util.stream.IntStream;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class BookController {
 
     private final BookService bookService;
@@ -56,6 +60,7 @@ public class BookController {
         modelMap.addAttribute("users", users);
 
         modelMap.addAttribute("msg", msg);
+        log.info("inch grenq!");
         return "book";
     }
 

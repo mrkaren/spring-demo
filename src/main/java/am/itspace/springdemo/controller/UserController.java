@@ -5,6 +5,10 @@ import am.itspace.springdemo.model.User;
 import am.itspace.springdemo.repository.UserRepository;
 import am.itspace.springdemo.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.aspectj.apache.bcel.generic.LOOKUPSWITCH;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -27,6 +31,7 @@ import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
 
     @Value("${file.upload.dir}")
@@ -75,6 +80,9 @@ public class UserController {
                 .profilePic(profilePic)
                 .build();
         userRepository.save(user);
+
+        log.debug("user with {} email was registered", user.getUsername());
+
         String link = "http://localhost:8081/user/activate?email=" + userRequest.getUsername() + "&token=" + user.getToken();
         emailService.sendHtmlEmail(userRequest.getUsername(),
                 "Welcome", user, link, "email/UserWelcomeMail.html", locale);
@@ -139,6 +147,7 @@ public class UserController {
                 user.setToken("");
                 user.setPassword(passwordEncoder.encode(password));
                 userRepository.save(user);
+                //
                 return "redirect:/?msg=Your password changed!";
             }
         }
